@@ -1,0 +1,199 @@
+---
+title: "anticlust off label"
+output: 
+    html_document:
+        highlight: zenburn
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(anticlust)
+
+set.seed(42)
+```
+
+## Excuse me, have you heard about anticlust?
+Whenever possible, I preach about the `R`-package `anticlust`.
+It can create equal groups of stimuli for you (or other stuff, as long as it has some features that enable you to quantify (dis)similarity), something that almost any scientist will need at some point.
+At least those in the experimental sciences, especially in psychology or neuroscience.
+Let's e.g. assume you want to know how chocolate consumption affects memory.
+You test a bunch of people on several occasions.
+At one time point, they eat chocolate.
+At another occasion, they eat non-chocolate stuff with the same amount of calories and in a third test, they eat nothing.
+In each session, you let them memorise picures and test them for later recall.
+Naturally, you want to test them on different pictures every time, because otherwise, they might get better because they already know the pictures.
+The problem is that different pictures are - well, different.
+They vary e.g. in brightness, emotional salience and their overall memorisability.
+Say you have gathered these measures before and now want to create three sets of pictures that you counter-balance between the three test sessions across participants.
+How do you make sure that your three sets are as similar as possible?
+
+The approach I've experienced in the past was usually something along the lines of: Let a student assistant move around some rows in Excel until the means of different features are similar enough.
+Or, on the more tech-savy end, randomise the hell out of your stimulus set until you identify a satisfying solution via brute force (with maybe some restrictions).
+All of these solutions yield suboptimal results and take time.
+With `anticlust`, however, the job is done within split seconds - or at least much faster, because this is a difficult problem, even for computers.
+Every additional stimulus and every feature that has to be taken into account decreases the computational time exponentially.
+In any case, `anticlust` will allow you to quantify the similarity of your sets and comes with a bunch of clever algorithms to help you out.
+It doesn't only take into account the means of the sets, but can e.g. also let them have similar standard deviations.
+
+## Off-label use
+But this is not want I wanted to talk about at all.
+You can find out more about `anticlust` and what it can do for you on it's [GitHub page](https://github.com/m-Py/anticlust) which will provide you with use cases and vignettes.
+I would rather like to tell you about the stuff they **don't** put into the vignettes!
+I've always tried to convince [Martin](https://twitter.com/MPapenberg), the developer of `anticlust`, that there is a function in his package that is designed to do different stuff.
+Instead of sorting stimuli into sets, I wanted to assign a subset of stimuli to participants in such a way that I get an equal amount of ratings for all of them.
+That's only a very brief description of the problem, which is best explained with code.
+First of all, we'll load `anticlust`.
+It's available on CRAN, so we can just:
+
+```{r eval = FALSE}
+install.packages("anticlust") # if you don't have it already, of course
+library(anticlust)
+```
+
+Let's assume I have a set of 975 stimuli I want to pilot.
+I'm using large and uncomfortable numbers here, but a small working example doesn't really capture it in this case.
+I wanted to get these stimuli rated and memorised by my participants, but there's no way in hell I could force someone to rate 975 stimuli in a row.
+To make things worse, I wanted two ratings for each stimulus, once presented as target (a picture people had to memorise), once presented as lure (distractor - it should confuse people during recall).
+Essentially, this gives us 975 $\times$ 2 stimuli, so `r 975 * 2` in total.
+So here's my set of stimuli:
+
+```{r}
+(
+  stimuli <- expand.grid(stim_id = 1:975,
+                         type = c("target", "lure"),
+                         stringsAsFactors = FALSE) %>% 
+    arrange(stim_id)
+) %>% head(10)
+```
+
+One participant should see 130 stimuli in total, 65 targets and 65 lures.
+So, if I want to get 10 ratings per stimulus $\times$ type combination (i.e. each stimulus should be rated 10 times as a lure and 10 times as a target), I need 150 participants ((1950 / 130) * 10 = `r (1950 / 130) * 10`).
+This is why I repeat each stimulus $\times$ type combination 10 times.
+
+```{r}
+stimuli <- 
+  do.call("rbind", replicate(10, stimuli, simplify = FALSE)) %>% 
+  arrange(stim_id)
+```
+
+```{r echo = FALSE}
+stimuli %>% 
+  as.data.frame() %>% 
+  head(12)
+```
+
+Now I can use the `categorical_sampling()` function from `anticlust`.
+Originally, it was designed to introduce categorical restraints to your stimulus sets, e.g. if you wanted a number of animal picture sets with similar cuteness ratings, but within these sets, half of the images should be cats and half of them should be dogs.
+It used to run under the hood, but now it's exported as a function for the user because it has surprisingly diverse applications.
+
+We use it to distribute our stimuli across participants, which are the "groups" here.
+It takes only two arguments.
+`categories` takes in the categories we want to consider for distributing our stimuli, i.e. the restraints.
+This can be a vector or, in the case of several categories, a data frame.
+That's our situation: Our restraints are the stimulus ID (each stimulus must only appear once within a participant) and the type (half of the stimuli a participant sees are targets, half of them are lures).
+Using `K`, we specify the number of groups, i.e. the number of participannts.
+Given these inputs, `categorical_sampling()` will now produce a vector of categories - and in our case, which stimulus belongs to which participant.
+
+```{r}
+participants <- categorical_sampling(categories = stimuli, K = 150)
+```
+
+```{r}
+head(participants, 20)
+```
+
+This makes more sense if we add it to your stimulus data frame.
+
+```{r}
+stimuli$participant <- participants
+```
+
+What we have here is our entire stimulus set for all our participants.
+If we sample 20 rows from this huge set with `r nrow(stimuli)` rows, we see that e.g. participant #141 sees stimulus #810 as a lure, participant #67 sees stimulus #499 as a target etc.
+
+```{r}
+stimuli[sample(nrow(stimuli), 20), ]
+```
+
+## Data checks
+But does the resulting stimulus set have the properties it's supposed to have?
+For example, does every participant have 130 trials as we specified?
+
+```{r}
+stimuli %>% 
+  group_by(participant) %>% 
+  count() %>% 
+  head()
+```
+
+```{r}
+stimuli %>% 
+  group_by(participant) %>% 
+  count() %>% 
+  {all(.$n == 130)} # check whether all counts == 130
+```
+
+That's the case!
+Does each participant see 65 targets and 65 lures?
+
+```{r}
+stimuli %>% 
+  group_by(participant, type) %>% 
+  count() %>% 
+  head()
+```
+
+
+```{r}
+stimuli %>% 
+  group_by(participant, type) %>% 
+  count() %>% 
+  {all(.$n == 65)} # check whether all counts == 65
+```
+
+That's the case as well!
+Is each stimulus rated 10 times as a lure and 10 times as a target?
+
+```{r}
+stimuli %>% 
+  group_by(stim_id, type) %>% 
+  count() %>% 
+  head()
+```
+
+```{r}
+stimuli %>% 
+  group_by(stim_id, type) %>% 
+  count() %>% 
+  {all(.$n == 10)} # check whether all counts == 10 
+```
+
+Lastly, does each participant see 130 unique stimuli?
+We don't want them to see the same stimulus ever, e.g. stimulus #42 both as target and lure within the same participant is not allowed.
+
+```{r}
+stimuli %>% 
+  group_by(participant) %>% 
+  # unique stimuli per participant, i.e. any duplicates are removed
+  summarise(unique_stims = unique(stim_id), .groups = "keep") %>% 
+  # count unique stimuli per participant
+  count() %>% 
+  head()
+```
+
+```{r}
+stimuli %>% 
+  group_by(participant) %>% 
+  # unique stimuli per participant, i.e. any duplicates are removed
+  summarise(unique_stims = unique(stim_id), .groups = "keep") %>% 
+  # count unique stimuli per participant
+  count() %>% 
+  {all(.$n == 130)} # check whether each participant sees 130 unique stimuli
+```
+
+We validated that what we did produced the desired result.
+That means that we can successfully (mis)use `categorical_sampling()` to distribute a set of stimuli across participants, where each participant sees only a subset of stimuli.
+This was an easy case, but we can take it to the next level.
+However, this is material for another blog post.
