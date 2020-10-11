@@ -132,7 +132,8 @@ stimuli %>%
 stimuli %>% 
   group_by(participant) %>% 
   count() %>% 
-  {all(.$n == 130)} # check whether all counts == 130
+  pull(n) %>% 
+  all(. == 130) # check whether all counts == 130
 ```
 
 That's the case!
@@ -150,7 +151,8 @@ stimuli %>%
 stimuli %>% 
   group_by(participant, type) %>% 
   count() %>% 
-  {all(.$n == 65)} # check whether all counts == 65
+  pull(n) %>% 
+  all(. == 65) # check whether all counts == 65
 ```
 
 That's the case as well!
@@ -166,8 +168,9 @@ stimuli %>%
 ```{r}
 stimuli %>% 
   group_by(stim_id, type) %>% 
-  count() %>% 
-  {all(.$n == 10)} # check whether all counts == 10 
+  count() %>%
+  pull(n) %>% 
+  all(. == 10) # check whether all counts == 10 
 ```
 
 Lastly, does each participant see 130 unique stimuli?
@@ -190,7 +193,8 @@ stimuli %>%
   summarise(unique_stims = unique(stim_id), .groups = "keep") %>% 
   # count unique stimuli per participant
   count() %>% 
-  {all(.$n == 130)} # check whether each participant sees 130 unique stimuli
+  pull(n) %>% 
+  all(. == 130) # check whether each participant sees 130 unique stimuli
 ```
 
 We validated that what we did produced the desired result.
