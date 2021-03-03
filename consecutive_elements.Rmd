@@ -1,0 +1,77 @@
+---
+title: "How many consecutive elements in a row?"
+output: 
+    html_document:
+        highlight: zenburn
+---
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+```
+
+## R tweets
+
+Whenever I discover a nice trick in `R`, I tweet about it.
+More often than not, future me will face the very same coding problem that past Juli already tweeted about.
+However, future Juli has a foggy memory: She knows past Juli solved this, but she doesn't know how.
+Future Juli will then search Twitter for her own tweet containing the solution, and we all know that Twitter's search function isn't exactly ideal.
+To make the search a little easier for future Juli, I will from now on post these things on my blog as well, making them easier for me to find.
+Maybe others will benefit as well.
+
+The things you will find here are neither especially clever nor especially original, but they came in handy when I needed them.
+I found some of these gems on Stack Overflow, and whenever my source memory doesn't let me down and I'm able to recover the corresponding Stack Overflow post, I will link it.
+
+## How many consecutive elements?
+
+Today's piece of code is about finding out how many consecutive elements there are in a vector.
+I tweeted about this [here](https://twitter.com/juli_tkotz/status/1301518835317723137).
+(I can't find the original Stack Overflow post anymore, but [here's a similar one](https://stackoverflow.com/questions/54072409/count-consecutive-elements-in-a-same-length-vector)).
+Here's some code:
+
+```{r}
+(fruit <- c(rep("apple", 2), rep("orange", 2), "apple", "lemon", rep("orange", 4), "lemon"))
+```
+
+If we want to count how many times a fruit occurs in a row, we can simply run:
+
+```{r}
+rle(fruit)$lengths
+```
+
+There's 2 apples, then there's 2 oranges, then 1 apple ...
+We can then use this to number the elements like this.
+
+```{r}
+sequence(rle(fruit)$lengths)
+```
+
+How is this useful? Let's suppose I want to add a trial number for a data frame, where every participant has a different number of trials.
+Here, I have separated the participants by colour, so it's easier to see which rows belong to which participant:
+
+```{r echo = FALSE}
+data <- 
+  data.frame(
+    participant = c(rep(1, 5), rep(2, 4), rep(3, 3), 4, rep(5, 4), 6)
+  ) %>% 
+  mutate(score = rnorm(nrow(.)))
+
+data %>% 
+  kable() %>% 
+  kable_styling("basic") %>% 
+  row_spec(which(data$participant %% 2 == 0), background = "#efef8f")
+```
+
+Then I can number the data points for each participant like this:
+
+```{r}
+data$trial_no <- sequence(rle(data$participant)$lengths)
+```
+
+```{r echo = FALSE}
+data %>% 
+  kable() %>% 
+  kable_styling("basic") %>% 
+  row_spec(which(data$participant %% 2 == 0), background = "#efef8f")
+```
+
