@@ -45,7 +45,7 @@ library(prmisc) # for printing the t-test
 julis_theme <- 
   theme(panel.background = element_rect(fill = "#cccccc"),
         panel.grid = element_blank(),
-        plot.background = element_rect(fill = "#404040"),
+        plot.background = element_rect(fill = "#404040", colour = NA),
         axis.line = element_line(colour = "black"),
         legend.position = "none",
         plot.title = element_text(size = 14, face = "plain", hjust = .5, colour = "#ffffff"),
