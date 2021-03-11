@@ -5,7 +5,7 @@ output:
         highlight: zenburn
 ---
 
-```{r}
+```{r echo = FALSE, message = FALSE}
 library(tidyverse)
 library(kableExtra)
 ```
@@ -59,7 +59,7 @@ data <-
 data %>% 
   kable() %>% 
   kable_styling("basic") %>% 
-  row_spec(which(data$participant %% 2 == 0), background = "#efef8f")
+  row_spec(which(data$participant %% 2 == 0), background = "#95726a", color = "black")
 ```
 
 Then I can number the data points for each participant like this:
@@ -72,6 +72,6 @@ data$trial_no <- sequence(rle(data$participant)$lengths)
 data %>% 
   kable() %>% 
   kable_styling("basic") %>% 
-  row_spec(which(data$participant %% 2 == 0), background = "#efef8f")
+  row_spec(which(data$participant %% 2 == 0), background = "#95726a", color = "black")
 ```
 

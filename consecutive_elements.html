@@ -252,21 +252,6 @@ pre code {
 </div>
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div>
-<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
-<pre><code>## v ggplot2 3.3.3     v purrr   0.3.4
-## v tibble  3.0.6     v dplyr   1.0.4
-## v tidyr   1.1.2     v stringr 1.4.0
-## v readr   1.4.0     v forcats 0.5.1</code></pre>
-<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code></pre></div>
-<pre><code>## 
-## Attaching package: &#39;kableExtra&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     group_rows</code></pre>
 <div id="r-tweets" class="section level2">
 <h2>R tweets</h2>
 <p>Whenever I discover a nice trick in <code>R</code>, I tweet about it. More often than not, future me will face the very same coding problem that past Juli already tweeted about. However, future Juli has a foggy memory: She knows past Juli solved this, but she doesn’t know how. Future Juli will then search Twitter for her own tweet containing the solution, and we all know that Twitter’s search function isn’t exactly ideal. To make the search a little easier for future Juli, I will from now on post these things on my blog as well, making them easier for me to find. Maybe others will benefit as well.</p>
@@ -275,14 +260,14 @@ pre code {
 <div id="how-many-consecutive-elements" class="section level2">
 <h2>How many consecutive elements?</h2>
 <p>Today’s piece of code is about finding out how many consecutive elements there are in a vector. I tweeted about this <a href="https://twitter.com/juli_tkotz/status/1301518835317723137">here</a>. (I can’t find the original Stack Overflow post anymore, but <a href="https://stackoverflow.com/questions/54072409/count-consecutive-elements-in-a-same-length-vector">here’s a similar one</a>). Here’s some code:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(fruit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;apple&quot;</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">&quot;orange&quot;</span>, <span class="dv">2</span>), <span class="st">&quot;apple&quot;</span>, <span class="st">&quot;lemon&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;orange&quot;</span>, <span class="dv">4</span>), <span class="st">&quot;lemon&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>(fruit <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;apple&quot;</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">&quot;orange&quot;</span>, <span class="dv">2</span>), <span class="st">&quot;apple&quot;</span>, <span class="st">&quot;lemon&quot;</span>, <span class="fu">rep</span>(<span class="st">&quot;orange&quot;</span>, <span class="dv">4</span>), <span class="st">&quot;lemon&quot;</span>))</span></code></pre></div>
 <pre><code>##  [1] &quot;apple&quot;  &quot;apple&quot;  &quot;orange&quot; &quot;orange&quot; &quot;apple&quot;  &quot;lemon&quot;  &quot;orange&quot; &quot;orange&quot;
 ##  [9] &quot;orange&quot; &quot;orange&quot; &quot;lemon&quot;</code></pre>
 <p>If we want to count how many times a fruit occurs in a row, we can simply run:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(fruit)<span class="sc">$</span>lengths</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rle</span>(fruit)<span class="sc">$</span>lengths</span></code></pre></div>
 <pre><code>## [1] 2 2 1 1 4 1</code></pre>
 <p>There’s 2 apples, then there’s 2 oranges, then 1 apple … We can then use this to number the elements like this.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sequence</span>(<span class="fu">rle</span>(fruit)<span class="sc">$</span>lengths)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sequence</span>(<span class="fu">rle</span>(fruit)<span class="sc">$</span>lengths)</span></code></pre></div>
 <pre><code>##  [1] 1 2 1 2 1 1 1 2 3 4 1</code></pre>
 <p>How is this useful? Let’s suppose I want to add a trial number for a data frame, where every participant has a different number of trials. Here, I have separated the participants by colour, so it’s easier to see which rows belong to which participant:</p>
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -302,7 +287,7 @@ score
 1
 </td>
 <td style="text-align:right;">
--0.5186969
+-2.2450117
 </td>
 </tr>
 <tr>
@@ -310,7 +295,7 @@ score
 1
 </td>
 <td style="text-align:right;">
--0.0058759
+-1.2684645
 </td>
 </tr>
 <tr>
@@ -318,7 +303,7 @@ score
 1
 </td>
 <td style="text-align:right;">
--0.2091536
+-0.0285545
 </td>
 </tr>
 <tr>
@@ -326,7 +311,7 @@ score
 1
 </td>
 <td style="text-align:right;">
--0.4649455
+-1.8421782
 </td>
 </tr>
 <tr>
@@ -334,39 +319,39 @@ score
 1
 </td>
 <td style="text-align:right;">
--0.0453461
+-0.8529983
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.1497928
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-0.3123817
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.5091363
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.2148599
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.6279420
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-0.0320687
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.3022393
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-1.8577839
 </td>
 </tr>
 <tr>
@@ -374,7 +359,7 @@ score
 3
 </td>
 <td style="text-align:right;">
-0.1893925
+2.0818096
 </td>
 </tr>
 <tr>
@@ -382,7 +367,7 @@ score
 3
 </td>
 <td style="text-align:right;">
--1.7342372
+-0.4396770
 </td>
 </tr>
 <tr>
@@ -390,15 +375,15 @@ score
 3
 </td>
 <td style="text-align:right;">
--1.1218039
+-0.7284104
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 4
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--1.7023409
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.4365058
 </td>
 </tr>
 <tr>
@@ -406,7 +391,7 @@ score
 5
 </td>
 <td style="text-align:right;">
-1.4492298
+0.4630120
 </td>
 </tr>
 <tr>
@@ -414,7 +399,7 @@ score
 5
 </td>
 <td style="text-align:right;">
--0.0672143
+-1.7608192
 </td>
 </tr>
 <tr>
@@ -422,7 +407,7 @@ score
 5
 </td>
 <td style="text-align:right;">
-0.2309380
+-0.0187533
 </td>
 </tr>
 <tr>
@@ -430,21 +415,21 @@ score
 5
 </td>
 <td style="text-align:right;">
-1.1437162
+2.1912900
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 6
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
-0.7722428
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.0630289
 </td>
 </tr>
 </tbody>
 </table>
 <p>Then I can number the data points for each participant like this:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>trial_no <span class="ot">&lt;-</span> <span class="fu">sequence</span>(<span class="fu">rle</span>(data<span class="sc">$</span>participant)<span class="sc">$</span>lengths)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>trial_no <span class="ot">&lt;-</span> <span class="fu">sequence</span>(<span class="fu">rle</span>(data<span class="sc">$</span>participant)<span class="sc">$</span>lengths)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -465,7 +450,7 @@ trial_no
 1
 </td>
 <td style="text-align:right;">
--0.5186969
+-2.2450117
 </td>
 <td style="text-align:right;">
 1
@@ -476,7 +461,7 @@ trial_no
 1
 </td>
 <td style="text-align:right;">
--0.0058759
+-1.2684645
 </td>
 <td style="text-align:right;">
 2
@@ -487,7 +472,7 @@ trial_no
 1
 </td>
 <td style="text-align:right;">
--0.2091536
+-0.0285545
 </td>
 <td style="text-align:right;">
 3
@@ -498,7 +483,7 @@ trial_no
 1
 </td>
 <td style="text-align:right;">
--0.4649455
+-1.8421782
 </td>
 <td style="text-align:right;">
 4
@@ -509,53 +494,53 @@ trial_no
 1
 </td>
 <td style="text-align:right;">
--0.0453461
+-0.8529983
 </td>
 <td style="text-align:right;">
 5
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.1497928
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-0.3123817
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 1
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.5091363
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.2148599
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.6279420
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-0.0320687
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 3
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 2
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--0.3022393
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+-1.8577839
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 4
 </td>
 </tr>
@@ -564,7 +549,7 @@ trial_no
 3
 </td>
 <td style="text-align:right;">
-0.1893925
+2.0818096
 </td>
 <td style="text-align:right;">
 1
@@ -575,7 +560,7 @@ trial_no
 3
 </td>
 <td style="text-align:right;">
--1.7342372
+-0.4396770
 </td>
 <td style="text-align:right;">
 2
@@ -586,20 +571,20 @@ trial_no
 3
 </td>
 <td style="text-align:right;">
--1.1218039
+-0.7284104
 </td>
 <td style="text-align:right;">
 3
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 4
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
--1.7023409
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.4365058
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 1
 </td>
 </tr>
@@ -608,7 +593,7 @@ trial_no
 5
 </td>
 <td style="text-align:right;">
-1.4492298
+0.4630120
 </td>
 <td style="text-align:right;">
 1
@@ -619,7 +604,7 @@ trial_no
 5
 </td>
 <td style="text-align:right;">
--0.0672143
+-1.7608192
 </td>
 <td style="text-align:right;">
 2
@@ -630,7 +615,7 @@ trial_no
 5
 </td>
 <td style="text-align:right;">
-0.2309380
+-0.0187533
 </td>
 <td style="text-align:right;">
 3
@@ -641,20 +626,20 @@ trial_no
 5
 </td>
 <td style="text-align:right;">
-1.1437162
+2.1912900
 </td>
 <td style="text-align:right;">
 4
 </td>
 </tr>
 <tr>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 6
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
-0.7722428
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
+0.0630289
 </td>
-<td style="text-align:right;background-color: #efef8f !important;">
+<td style="text-align:right;color: black !important;background-color: #95726a !important;">
 1
 </td>
 </tr>
