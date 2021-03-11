@@ -1,0 +1,262 @@
+---
+title: "The enchanted die"
+output: 
+  html_document:
+    highlight: zenburn
+---
+
+## Prologue
+
+In our modern world, we have left behind magic and myths, instead relying on facts and data.
+We embrace chance and are willing to accept that we cannot control the outcome of a die roll - as long as it is a fair die.
+But what if there was a way to influence chance with magic?
+What if we all still have magical powers, waiting to surface?
+
+Imagine the potential you could unlock if we were to reclaim our magic abilities - and then someone comes along and tells you about regression to the mean.
+A coding journey.
+
+## What this is all about
+
+I will use my "magic powers" to enchant a die - which will improve its "performance".
+In case you didn't know, I have the ability to influence dice - better not get in my way during board games!
+In fact, I once did a [YouTube video](https://www.youtube.com/watch?v=LB_X3jXZC8I) demonstrating my magic powers, which was later picked up by the millions-of-subscriber German scicom YouTuber Dr. Mai Thi Nguyen-Kim in her [video about the placebo effect](https://www.youtube.com/watch?v=ESMooFO0aaY).
+
+Anyways, here's the `R` code I used to analyse and later generate some magical die roll data.
+Spoiler alert: Ultimately, I will show that I do not, in fact, possess magical powers.
+Sorry.
+
+## Read and process the data
+
+As you can see in my video, I actually rolled a die 200 times and "enchanted" it with my little wooden stick whenever I rolled a 1 or a 2.
+The logic behind that: Obviously, when the die's performance is "low" (the larger the number, the better), it needs some "magical support".
+The data is stored in this [GitHub repository](https://github.com/einGlasRotwein/blog).
+
+```{r echo=FALSE}
+library(kableExtra)
+```
+
+
+```{r message = FALSE}
+library(tidyverse)
+library(effsize)
+library(prmisc) # for printing the t-test
+
+# plot theme
+julis_theme <- 
+  theme(panel.background = element_rect(fill = "#cccccc"),
+        panel.grid = element_blank(),
+        plot.background = element_rect(fill = "#404040"),
+        axis.line = element_line(colour = "black"),
+        legend.position = "none",
+        plot.title = element_text(size = 14, face = "plain", hjust = .5, colour = "#ffffff"),
+        axis.text = element_text(size = 12, colour = "#ffffff"),
+        axis.title = element_text(size = 14, colour = "#ffffff"),
+        strip.text = element_text(size = 12, colour = "#ffffff"),
+        strip.background = element_rect(fill = "#303030"))
+
+## load data
+dd <- read.csv("enchanted_die.csv", sep = ";")
+```
+
+A quick look at the data shows us there is a column named `roll`, which indicates the number rolled.
+And then there's `magic_before`, which tells us whethere magic "happened" before that roll.
+`1` means there was magic `0` means there wasn't.
+
+```{r}
+head(dd) %>% 
+  kable() %>% 
+  kable_styling("basic")
+```
+
+Does the die get better after my "magical intervention"?
+We can find that out by calculating the difference to the previous run.
+For the first run, we insert a missing value, because there can't be a difference to the previous run.
+
+```{r}
+dd$diff <- c(NA, diff(dd$roll))
+head(dd) %>% 
+  kable() %>% 
+  kable_styling("basic")
+```
+
+## Results
+
+A sneak peak at the data shows us the differences in magic vs. no magic.
+
+```{r}
+by(dd$diff, dd$magic_before, summary)
+```
+
+Descriptively, it looks like the die improves a lot after we've used magic - by 2.119 points on average!
+And it even gets worse when we don't use magic: The number rolled decreases by 0.9071 on anverage.
+Here's a little plot for that: The points represent the difference to the previous run for single runs.
+The large square in the middle is the mean value.
+
+```{r warning = FALSE}
+dd %>% 
+  mutate(magic_before = ifelse(magic_before == 0, "no magic", "magic")) %>% 
+  ggplot(aes(x = factor(magic_before), y = diff, colour = factor(magic_before),
+             fill = factor(magic_before))) +
+  geom_point(position = position_jitter(width = .2, height = 0), alpha = .7, size = 3) +
+  stat_summary(size = 2, fun = "mean", shape = 22, colour = "black") +
+  geom_hline(yintercept = 0) +
+  labs(y = "difference", x = "magic before") +
+  scale_y_continuous(breaks = seq(-5, 5, 1)) +
+  scale_colour_manual(values = c("#efef8f", "#cc9393")) +
+  scale_fill_manual(values = c("#efef8f", "#cc9393")) +
+  julis_theme +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+```
+
+```{r echo = FALSE, message = FALSE}
+die_ttest <- t.test(dd$diff ~ dd$magic_before)
+die_effsize <- cohen.d(dd$diff ~ dd$magic_before)
+```
+
+Let's check whether the die improves significantly when we use magic.
+And it does! `r print_ttest(die_ttest, die_effsize)`.
+The effect size is huge!
+
+## How did that happen?
+
+As you might have guessed, magic is not the reason for this result.
+Did I manipulate the die?
+It doesn't look like it - the numbers I rolled are approximately uniformly distributed.
+
+```{r}
+dd %>% 
+  ggplot(aes(x = roll)) + 
+  geom_bar(col = "black", alpha = .6) + 
+  scale_x_continuous(breaks = seq(1, 6, 1)) +
+  labs(x = "number rolled", y = "count") +
+  julis_theme
+```
+
+Also, the numbers are uniformly distributed for both conditions "magic" and "no magic":
+
+```{r}
+dd %>% 
+  mutate(magic_before = ifelse(magic_before == 0, "no magic", "magic")) %>% 
+  ggplot(aes(x = roll, fill = magic_before)) + 
+  geom_bar(col = "black", alpha = .6) + 
+  scale_x_continuous(breaks = seq(1, 6, 1)) +
+  labs(y = "difference", x = "magic before") +
+  scale_fill_manual(values = c("#efef8f", "#cc9393")) +
+  facet_wrap(~magic_before) +
+  julis_theme
+```
+
+What is it, then?
+The poor die didn't have a choice.
+I always use magic when I rolled a 1 or a 2.
+However, after I rolled a 1, the die can **only** "improve" - the only way is up (or it stays the same).
+After a 2, only one of six numbers would result in a "worse" performance: If I roll a 1.
+If I roll a 6, on the other hand, things can only get worse.
+So, because I use my magical intervention when the poor die is at his lowest, it can only improve afterwards.
+
+## Regression to the mean
+
+I use this little experiment as a demonstration for lay people, but if you are a scientist, you already know what happened here.
+This is a demonstration of "regression to the mean" in an extreme form.
+The die did not improve **because** I used magic, but because I used magic **at the right time**.
+Most people know this phenomenon from everyday life, when they say: "Well, it can't get worse."
+However, their intuition for it suddenly disappears in other areas: We are angry when our favourite football team loses after a stellar performance in the previous game.
+We are annoyed when the sequel of a film isn't as good as the first one.
+And we (Germans) take homeopathic placebos when our pain is at peak levels and then think that it was the globuli that helped us.
+
+## Simulated data
+
+To illustrate the phenomenon further, here is a function that will generate "enchanted" die rolls.
+It generates `nrolls` die rolls and enchants them whenever a "magic number" (`magic_numbers`) has been rolled previously.
+If you like to play D&D, you can also specify the numbers the die can potentially roll via `die_outcomes` (e.g. numbers from 1-20).
+
+```{r}
+enchant_die <- function(nrolls, magic_numbers = c(1, 2), die_outcomes = 1:6) {
+  
+  # If at least one magic number cannot be rolled by the dice, throw an error.
+  if (sum(!magic_numbers %in% die_outcomes) > 0) {
+    stop("At least one of your magic numbers cannot be rolled by your die.")
+  }
+  
+  dd <- data.frame(roll = sample(die_outcomes, nrolls, replace = TRUE), 
+                   magic_before = NA)
+  
+  dd$magic_before <- ifelse(lag(dd$roll) %in% magic_numbers, 1, 0)
+  
+  dd$magic_before[1] <- 0 # no magic in the first roll
+  
+  # Sende eine magische Nachricht, wenn die Funktion fertig ist.
+  magic_message <- c("Mischief managed.", "Magical!", "Alea iacta est.", "You're a wizard!",
+                     "Magic is in the air.", "Did you just feel that?", "Enchanting!",
+                     "Thank you for choosing Enchanted Dies!", "I'm slightly bewichted.",
+                     "With great power comes great responsibilty.", "That's a lot of die rolls",
+                     "6 is my lucky number!", "Charming!", "I'm under your spell!")
+  
+  print(sample(magic_message, 1))
+  
+  return(dd)
+}
+
+```
+
+Let's generate 500 die rolls and use magic whenever a 5 or a 6 was rolled.
+
+```{r}
+dd <- enchant_die(500, magic_numbers = c(5, 6))
+```
+
+We quickly run the same code as before to visualise the results.
+As we can see, the die is now better when we **don't** use magic - because this time, we "enchanted" the high numbers.
+It's a bit like taking an aspirin when you feel amazing.
+
+```{r echo = FALSE}
+dd$diff <- c(NA, diff(dd$roll))
+by(dd$diff, dd$magic_before, summary)
+```
+
+```{r warning = FALSE}
+dd %>% 
+  mutate(magic_before = ifelse(magic_before == 0, "no magic", "magic")) %>% 
+  ggplot(aes(x = factor(magic_before), y = diff, colour = factor(magic_before),
+             fill = factor(magic_before))) +
+  geom_point(position = position_jitter(width = .2, height = 0), alpha = .7, size = 3) +
+  stat_summary(size = 2, fun = "mean", shape = 22, colour = "black") +
+  geom_hline(yintercept = 0) +
+  labs(y = "difference", x = "magic before") +
+  scale_y_continuous(breaks = seq(-5, 5, 1)) +
+  scale_colour_manual(values = c("#efef8f", "#cc9393")) +
+  scale_fill_manual(values = c("#efef8f", "#cc9393")) +
+  julis_theme +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+```
+
+```{r echo = FALSE, warning = FALSE}
+(die_ttest <- t.test(dd$diff ~ dd$magic_before))
+(die_effsize <- cohen.d(dd$diff ~ dd$magic_before))
+```
+
+```{r}
+dd %>% 
+  ggplot(aes(x = roll)) + 
+  geom_bar(col = "black", alpha = .6) + 
+  scale_x_continuous(breaks = seq(1, 6, 1)) +
+  labs(x = "number rolled", y = "count") +
+  julis_theme
+```
+
+```{r}
+dd %>% 
+  mutate(magic_before = ifelse(magic_before == 0, "no magic", "magic")) %>% 
+  ggplot(aes(x = roll, fill = magic_before)) + 
+  geom_bar(col = "black", alpha = .6) + 
+  scale_x_continuous(breaks = seq(1, 6, 1)) +
+  labs(y = "difference", x = "magic before") +
+  scale_colour_manual(values = c("#efef8f", "#cc9393")) +
+  scale_fill_manual(values = c("#efef8f", "#cc9393")) +
+  facet_wrap(~magic_before) +
+  julis_theme
+```
+
+So, while it sadly turns out that I do not have magic powers, this example code might have the almost-magic ability to illustrate regression to the mean.
